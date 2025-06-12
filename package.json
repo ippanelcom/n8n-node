@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-ippanel",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "n8n node for IPPanel SMS service",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

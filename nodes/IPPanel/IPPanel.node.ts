@@ -1,4 +1,4 @@
-import { IExecuteFunctions } from 'n8n-core';
+import { IExecuteFunctions } from 'n8n-workflow';
 import {
   INodeExecutionData,
   INodeType,
@@ -217,19 +217,27 @@ export class IPPanel implements INodeType {
             const recipientsRaw = this.getNodeParameter('recipients', i) as string;
             const recipients = recipientsRaw.split(',').map((num) => num.trim());
 
-            const response = await client.sendWebservice(
-              message,
-              sender,
-              recipients,
-            );
+            try {
+              const response = await client.sendWebservice(
+                message,
+                sender,
+                recipients,
+              );
 
-            returnData.push({
-              json: {
-                success: true,
-                response,
-              },
-              pairedItem: { item: i },
-            });
+              returnData.push({
+                json: {
+                  success: true,
+                  response,
+                },
+                pairedItem: { item: i },
+              });
+            } catch (apiError: any) {
+              throw new NodeOperationError(
+                this.getNode(),
+                `IPPanel SMS sending failed: ${apiError.message || 'Unknown API error'}`,
+                { itemIndex: i }
+              );
+            }
           } else if (operation === 'sendPattern') {
             // Send Pattern
             let patternCode: string;
@@ -242,7 +250,8 @@ export class IPPanel implements INodeType {
               if (!patternCode) {
                 throw new NodeOperationError(
                   this.getNode(),
-                  `No pattern code found in field "${patternCodeField}"!`
+                  `No pattern code found in field "${patternCodeField}"!`,
+                  { itemIndex: i }
                 );
               }
             } else {
@@ -257,7 +266,11 @@ export class IPPanel implements INodeType {
             try {
               patternParams = JSON.parse(patternParamsRaw);
             } catch (e) {
-              throw new NodeOperationError(this.getNode(), 'Pattern parameters must be a valid JSON object!');
+              throw new NodeOperationError(
+                this.getNode(),
+                'Pattern parameters must be a valid JSON object!',
+                { itemIndex: i }
+              );
             }
 
             try {
@@ -272,12 +285,16 @@ export class IPPanel implements INodeType {
                 json: {
                   success: true,
                   response,
-                  patternCode, // Include the used pattern code in the output for debugging
+                  patternCode,
                 },
                 pairedItem: { item: i },
               });
             } catch (apiError: any) {
-              throw new Error(`IPPanel pattern message sending failed: ${apiError.message || 'Unknown API error'}`);
+              throw new NodeOperationError(
+                this.getNode(),
+                `IPPanel pattern message sending failed: ${apiError.message || 'Unknown API error'}`,
+                { itemIndex: i }
+              );
             }
           }
         }

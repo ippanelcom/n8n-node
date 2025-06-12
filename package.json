@@ -1,10 +1,15 @@
 {
   "name": "n8n-nodes-ippanel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "n8n node for IPPanel SMS service",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "echo 'No build needed - using JavaScript directly'"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "format": "prettier --write .",
+    "lint": "eslint --ext .ts --fix",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "n8n",
@@ -15,12 +20,25 @@
   ],
   "author": "IPPanel",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ippanelcom/n8n-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ippanelcom/n8n-node/issues"
+  },
+  "homepage": "https://github.com/ippanelcom/n8n-node#readme",
   "dependencies": {
     "axios": "^1.9.0",
     "ippanel-node-sdk": "^1.0.1"
   },
   "devDependencies": {
-    "n8n-workflow": "^1.82.0"
+    "@types/node": "^18.15.11",
+    "eslint": "^8.38.0",
+    "prettier": "^2.8.7",
+    "typescript": "~5.0.4",
+    "n8n-workflow": "^1.82.0",
+    "n8n-core": "^1.0.0"
   },
   "n8n": {
     "n8nNodesApiVersion": 1,
@@ -30,5 +48,8 @@
     "credentials": [
       "credentials/IPPanelApi.credentials.js"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

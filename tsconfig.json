@@ -12,6 +12,5 @@
     "declaration": true,
     "skipLibCheck": true
   },
-  "include": ["nodes/**/*"]
+  "include": ["nodes/**/*", "credentials/**/*", "index.ts"]
 }
-

@@ -5,8 +5,76 @@ import {
   INodeTypeDescription,
   IDataObject,
   NodeOperationError,
+  IHttpRequestOptions,
 } from 'n8n-workflow';
-import { createClient } from 'ippanel-node-sdk';
+
+// Direct implementation of IPPanel client functionality based on the SDK
+interface IPPanelClient {
+  sendWebservice: (message: string, sender: string, recipients: string[]) => Promise<any>;
+  sendPattern: (patternCode: string, sender: string, recipient: string, patternParams: Record<string, any>) => Promise<any>;
+}
+
+// Create IPPanel client function based on the SDK implementation
+function createIPPanelClient(apiKey: string, helpers: IExecuteFunctions): IPPanelClient {
+  const baseUrl = 'https://edge.ippanel.com/v1/api';
+
+  /**
+   * Private method to make POST requests to the API
+   */
+  const _post = async (path: string, payload: any): Promise<any> => {
+    const options: IHttpRequestOptions = {
+      method: 'POST',
+      url: `${baseUrl}${path}`,
+      body: payload,
+      headers: {
+        'Authorization': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      json: true,
+    };
+
+    try {
+      // این خط کلیدی است
+      return await (helpers.helpers.request as Function).call(helpers, options);
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(`API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        throw new Error('No response received from the API');
+      } else {
+        throw new Error(`Request failed: ${error.message || 'Unknown error'}`);
+      }
+    }
+  };
+
+  return {
+    sendWebservice: async (message: string, sender: string, recipients: string[]): Promise<any> => {
+      const payload = {
+        from_number: sender,
+        params: {
+          recipients
+        },
+        message,
+        sending_type: 'webservice'
+      };
+
+      return _post('/send', payload);
+    },
+
+    sendPattern: async (patternCode: string, sender: string, recipient: string, params: Record<string, any>): Promise<any> => {
+      const payload = {
+        from_number: sender,
+        recipients: [recipient],
+        code: patternCode,
+        params,
+        sending_type: 'pattern'
+      };
+
+      return _post('/send', payload);
+    },
+  };
+}
 
 export class IPPanel implements INodeType {
   description: INodeTypeDescription = {
@@ -202,7 +270,8 @@ export class IPPanel implements INodeType {
       throw new NodeOperationError(this.getNode(), 'IPPanel API key is required!');
     }
 
-    const client = createClient(credentials.apiKey as string);
+    // Create our own implementation of the IPPanel client
+    const client = createIPPanelClient(credentials.apiKey as string, this);
 
     for (let i = 0; i < items.length; i++) {
       try {

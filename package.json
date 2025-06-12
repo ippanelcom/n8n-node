@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-ippanel",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "n8n node for IPPanel SMS service",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,13 +8,15 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "format": "prettier --write .",
-    "lint": "eslint --ext .ts --fix",
+    "lint": "eslint --ext .ts --fix .",
+    "test": "jest",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
     "n8n",
     "n8n-node",
     "n8n-community-node",
+    "n8n-community-node-package",
     "ippanel",
     "sms"
   ],
@@ -33,20 +35,23 @@
     "ippanel-node-sdk": "^1.0.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^18.15.11",
     "eslint": "^8.38.0",
-    "prettier": "^2.8.7",
-    "typescript": "~5.0.4",
+    "jest": "^30.0.0",
+    "n8n-core": "^1.0.0",
     "n8n-workflow": "^1.82.0",
-    "n8n-core": "^1.0.0"
+    "prettier": "^2.8.7",
+    "ts-jest": "^29.4.0",
+    "typescript": "~5.0.4"
   },
   "n8n": {
     "n8nNodesApiVersion": 1,
     "nodes": [
-      "nodes/IPPanel/IPPanel.node.js"
+      "dist/nodes/IPPanel/IPPanel.node.js"
     ],
     "credentials": [
-      "credentials/IPPanelApi.credentials.js"
+      "dist/credentials/IPPanelApi.credentials.js"
     ]
   },
   "publishConfig": {
